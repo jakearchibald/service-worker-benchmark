@@ -324,10 +324,51 @@
   <script>
     window.onload = () => {
       const timing = performance.timing;
+      const controls = document.querySelector('.controls');
+      const swStatus = document.querySelector('.sw-status');
+      const sw = navigator.serviceWorker;
+
       document.querySelector('.results').textContent = `${timing.loadEventStart - timing.navigationStart}ms from nav start to onload start`;
 
-      function updateSWStatus() {
-        // TODO
+      function logActiveWorker() {
+        sw.getRegistration().then(reg => {
+          if (!reg) {
+            swStatus.textContent = 'No service worker';
+            return;
+          }
+          if (!reg.active) {
+            watchUpdate(reg);
+            return;
+          }
+          swStatus.textContent = `${/\/([^\/]+)$/.exec(reg.active.scriptURL)[1]} active`;
+        });
+      }
+
+      logActiveWorker();
+
+      function watchUpdate(reg) {
+        const worker = reg.installing;
+
+        if (!worker) {
+          swStatus.textContent = 'Already installed';
+          return;
+        }
+
+        swStatus.textContent = 'Installing';
+
+        worker.addEventListener('statechange', function listener() {
+          if (worker.state == 'activated') {
+            logActiveWorker();
+            worker.removeEventListener('statechange', listener);
+          }
+          else if (worker.state == 'redundant') {
+            updateError();
+          }
+        });
+      }
+
+      function updateError() {
+        swStatus.textContent = 'Update error';
       }
 
       function createButton(text, event) {
@@ -336,16 +377,31 @@
         button.onclick = event;
         return button;
       }
-
-      const controls = document.querySelector('.controls');
       
       controls.appendChild(createButton("Unregister", () => {
-        
+        sw.getRegistration().then(r => r && r.unregister())
+          .then(() => swStatus.textContent = 'Unregistered');
       }));
 
-      controls.appendChild(createButton("Register empty-fetch-event worker", () => {
-        // TODO
-      }))
+      controls.appendChild(createButton("Register no-fetch worker", () => {
+        sw.register('no-fetch.js').then(watchUpdate, updateError);
+      }));
+
+      controls.appendChild(createButton("Register empty-fetch worker", () => {
+        sw.register('empty-fetch.js').then(watchUpdate, updateError);
+      }));
+
+      controls.appendChild(createButton("Register pass-through worker", () => {
+        sw.register('pass-through-fetch.js').then(watchUpdate, updateError);
+      }));
+
+      controls.appendChild(createButton("Register blocking worker", () => {
+        sw.register('blocking-fetch.js').then(watchUpdate, updateError);
+      }));
+
+      controls.appendChild(createButton("Register caching worker", () => {
+        sw.register('cached-fetch.js').then(watchUpdate, updateError);
+      }));
     };
   </script>
 </body>

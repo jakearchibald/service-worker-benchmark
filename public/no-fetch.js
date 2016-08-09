@@ -1,0 +1,1 @@
+self.oninstall = () => self.skipWaiting();
