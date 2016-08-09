@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "serve": "node ./server.js"
+    "serve": "node ./server.js",
+    "deploy": "git subtree push --prefix public origin gh-pages"
   },
   "author": "Jake Archibald",
   "devDependencies": {
