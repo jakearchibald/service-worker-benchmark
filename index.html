@@ -403,6 +403,12 @@
       controls.appendChild(createButton("Register caching worker", () => {
         sw.register('cached-fetch.js').then(watchUpdate, updateError);
       }));
+
+      controls.appendChild(createButton("Register data-url-fetch worker", () => {
+        // this is a long one…
+        swStatus.textContent = 'Registering…';
+        sw.register('data-url-fetch.js').then(watchUpdate, updateError);
+      }));
     };
   </script>
 </body>
