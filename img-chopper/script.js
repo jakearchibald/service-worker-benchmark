@@ -59,4 +59,28 @@
       });
     });
   });
+
+  document.querySelector('.base64').addEventListener('click', () => {
+    const obj = {};
+
+    Promise.all(
+      Array(width * height).fill('').map((_, i) =>
+        fetch(`../public/images/${i}.png`).then(r => r.blob()).then(blob => {
+          return new Promise(resolve => {
+            const reader = new FileReader();
+            reader.readAsDataURL(blob); 
+            reader.onloadend = () => resolve(reader.result);
+          });
+        })
+      )
+    ).then(strings => {
+      for (const [i, str] of strings.entries()) {
+        obj[`${i}.png`] = str;
+      }
+
+      const pre = document.createElement('pre');
+      pre.textContent = JSON.stringify(obj, null, '  ');
+      document.body.appendChild(pre);
+    });
+  });
 }
