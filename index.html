@@ -378,7 +378,7 @@
         button.onclick = event;
         return button;
       }
-      
+
       controls.appendChild(createButton("Unregister", () => {
         sw.getRegistration().then(r => r && r.unregister())
           .then(() => swStatus.textContent = 'Unregistered');
@@ -408,6 +408,10 @@
         // this is a long one…
         swStatus.textContent = 'Registering…';
         sw.register('data-url-fetch.js').then(watchUpdate, updateError);
+      }));
+
+      controls.appendChild(createButton("Register streaming-fetch worker", () => {
+        sw.register('streaming-fetch.js').then(watchUpdate, updateError);
       }));
     };
   </script>
