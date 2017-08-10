@@ -12,7 +12,8 @@ if (argv.help) {
 Options:
   --port     Port number (default: 8000)
   --http2    Use HTTP2 server (HTTPS)
-  --max-age  Set a max-age on all resource in ms (default: 0)
+  --max-age  Set a max-age on all resources in ms (default: 0)
+  --no-store Set no-store on all resources
 `
   )
   process.exit();
@@ -27,9 +28,16 @@ const serveStatic = require('serve-static');
 const app = connect();
 
 app.use(morgan('dev'));
-app.use('/', serveStatic('public', {
+
+const staticOpts = {
   maxAge: argv['max-age'] || 0
-}));
+};
+
+if (argv['no-store']) {
+  staticOpts.setHeaders = res => res.setHeader('Cache-Control', 'no-store');
+}
+
+app.use('/', serveStatic('public', staticOpts));
 app.use('/', serveIndex('public', {icons: true}));
 
 const server = (() => {
